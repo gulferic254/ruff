@@ -2515,14 +2515,6 @@ impl<'db> Unpacked<'db> {
         }
     }
 
-    pub(crate) fn display_name(&self) -> Name {
-        Name::new(format!("**{}", self.name))
-    }
-
-    pub(crate) fn annotated_type(&self) -> Type<'db> {
-        self.annotated_type
-    }
-
     fn apply_type_mapping_impl<'a>(
         &self,
         db: &'db dyn Db,
@@ -3101,13 +3093,6 @@ impl<'db> Parameters<'db> {
         self.iter()
             .enumerate()
             .rfind(|(_, parameter)| parameter.is_keyword_variadic())
-    }
-
-    /// Return the retained `**kwargs: Unpack[TypedDict]` metadata and its index, if any.
-    pub(crate) fn unpacked(&self) -> Option<(usize, &Unpacked<'db>)> {
-        self.unpacked
-            .as_ref()
-            .map(|parameter| (self.value.len(), parameter))
     }
 }
 

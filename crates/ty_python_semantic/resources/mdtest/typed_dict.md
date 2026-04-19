@@ -3180,19 +3180,49 @@ stringified(a=1)
 Only string-keyed mappings can be unpacked into named keyword parameters.
 
 ```py
-def takes_name(*, name: str) -> None: ...
+from typing_extensions import TypedDict, Unpack
+
+class HasNameKwargs(TypedDict):
+    name: str
+
+def takes_name_kwargs(**kwargs: Unpack[HasNameKwargs]) -> None: ...
 def _(int_key_dict: dict[int, str]) -> None:
     # snapshot: invalid-argument-type
-    takes_name(**int_key_dict)
+    takes_name_kwargs(**int_key_dict)
 ```
 
 ```snapshot
 error[invalid-argument-type]: Argument expression after ** must be a mapping with `str` key type
- --> src/mdtest_snippet.py:4:16
+ --> src/mdtest_snippet.py:9:23
   |
-4 |     takes_name(**int_key_dict)
-  |                ^^^^^^^^^^^^^^ Found `int`
+9 |     takes_name_kwargs(**int_key_dict)
+  |                       ^^^^^^^^^^^^^^ Found `int`
   |
+```
+
+### Non-mapping values are rejected without missing-argument cascades
+
+```py
+from typing_extensions import TypedDict, Unpack
+
+class HasNameKwargs(TypedDict):
+    name: str
+
+class NotAMapping: ...
+
+def takes_name_kwargs(**kwargs: Unpack[HasNameKwargs]) -> None: ...
+def _(bad: NotAMapping) -> None:
+    # snapshot: invalid-argument-type
+    takes_name_kwargs(**bad)
+```
+
+```snapshot
+error[invalid-argument-type]: Argument expression after ** must be a mapping type
+  --> src/mdtest_snippet.py:11:25
+   |
+11 |     takes_name_kwargs(**bad)
+   |                         ^^^ Found `NotAMapping`
+   |
 ```
 
 ### Explicit keywords still conflict with maybe-present unpacked keys
